@@ -38,7 +38,7 @@ export const CourseMapUI = ({ courseTitle, courseId, lessons }: CourseMapUIProps
 
                             {/* 2. ИНФОРМАЦИОННЫЙ БЛОК: Его позиция зависит от четности индекса */}
                             <div
-                                className={`w-1/2 p-4 rounded-lg bg-white shadow-md border transition duration-300 
+                                className={`w-1/2 p-4 rounded-lg bg-white shadow-md border transition duration-300
                     ${index % 2 === 0 ? 'ml-0 mr-auto' : 'mr-0 ml-auto'} 
                     ${lesson.status === 'active' ? 'border-blue-300' : 'border-gray-200'}`
                                 }

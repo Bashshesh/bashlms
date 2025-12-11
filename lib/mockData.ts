@@ -47,7 +47,7 @@ export const mockCourses: Course[] = [
         description: 'HTML, CSS, Figma и основы адаптивной верстки.',
         price: 14900,
         startDate: '2026-01-10',
-        isEnrolled: false,
+        isEnrolled: true,
         lessons: [],
     },
     {

@@ -20,6 +20,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
     const course = await fetchCourseById(courseId);
 
+
     if (!course) {
         notFound();
     }
@@ -34,6 +35,17 @@ export default async function CoursePage({ params }: CoursePageProps) {
             </div>
         );
     }
+    // проверка есть ли вообще уроки в этом курсе?
+    if (!course?.lessons || course.lessons.length === 0) {
+        return (
+            <div className="p-8">
+                <h2 className="text-3xl font-bold mb-6">🛑 Уроков еще нет</h2>
+                <Alert type="warning" message={`В курсе "${course.title}" не имеются уроки. Пожалуйста, обратитесь в поддержку.`} />
+            </div>
+        )
+    }
+
+
 
     // 5. Рендерим UI, передавая необходимые данные
     return (
