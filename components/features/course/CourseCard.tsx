@@ -1,11 +1,29 @@
+'use client';
+
 import Link from 'next/link';
 import { Course } from '@/lib/mockData'; // Импортируем тип!
+import { Button } from '@/components/ui/Button';
 
 interface CourseCardProps {
     course: Course;
 }
 
 export const CourseCard = ({ course }: CourseCardProps) => {
+
+    let buttonText = 'Подробнее';
+    let buttonVariant: 'default' | 'outline' = 'default';
+
+    if (course.isEnrolled) {
+        buttonText = 'Продолжить';
+        buttonVariant = 'default'; // Синяя
+    } else if (course.price > 0) {
+        buttonText = 'Купить курс';
+        buttonVariant = 'default'; // Синяя
+    } else {
+        buttonText = 'Начать бесплатно';
+        buttonVariant = 'outline'; // или 'default', на твой выбор
+    }
+
     return (
         // Карточка ведет на детальную страницу курса: /courses/[id]
         <Link href={`/courses/${course.id}`} className="block">
@@ -27,12 +45,14 @@ export const CourseCard = ({ course }: CourseCardProps) => {
                     )}
                 </div>
 
-                <button
-                    type="button" // Добавлено, чтобы предотвратить отправку формы, если карточка попадет в форму
-                    className="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+                <Button
+                    className="mt-4 w-full pointer-events-none" // ⬅️ w-full и mt-4
+                    variant={buttonVariant}
+                    size="default"
+                    tabIndex={-1}
                 >
-                    {course.isEnrolled ? 'Продолжить' : course.price > 0 ? 'Купить курс' : 'Начать бесплатно'}
-                </button>
+                    {buttonText}
+                </Button>
             </div>
         </Link>
     );

@@ -29,7 +29,20 @@ const courseLessons: Lesson[] = [
     { id: 103, title: 'Условные операторы', videoUrl: 'video_103.mp4', status: 'locked', deadline: '2025-12-20' }, // Закрыт
     { id: 104, title: 'Циклы', videoUrl: 'video_104.mp4', status: 'locked' },
     { id: 105, title: 'Функции', videoUrl: 'video_105.mp4', status: 'locked' },
+    { id: 106, title: 'OOP', videoUrl: 'video_105.mp4', status: 'locked' },
+
 ];
+
+const courseLessons2: Lesson[] = [
+    { id: 201, title: 'OOP', videoUrl: 'video_105.mp4', status: 'completed' },
+    { id: 202, title: 'Переменные и типы', videoUrl: 'video_102.mp4', status: 'completed' }, // Активный урок (надо пройти)
+    { id: 203, title: 'Условные операторы', videoUrl: 'video_103.mp4', status: 'active', deadline: '2025-12-20' }, // Закрыт
+    { id: 204, title: 'Циклы', videoUrl: 'video_104.mp4', status: 'active' },
+    { id: 205, title: 'Функции', videoUrl: 'video_105.mp4', status: 'active' },
+
+];
+
+
 
 export const mockCourses: Course[] = [
     {
@@ -48,7 +61,7 @@ export const mockCourses: Course[] = [
         price: 14900,
         startDate: '2026-01-10',
         isEnrolled: true,
-        lessons: [],
+        lessons: courseLessons2,
     },
     {
         id: 3,

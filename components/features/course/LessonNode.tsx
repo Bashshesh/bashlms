@@ -10,24 +10,25 @@ interface LessonNodeProps {
 }
 
 export const LessonNode = ({ lesson, courseId }: LessonNodeProps) => {
-    const {status, title, grade, id} = lesson;
+    const { status, title, grade, id } = lesson;
     const link = `/courses/${courseId}/lesson/${id}`;
+
+    // Размеры
+    const sizeClasses = "h-24 w-24"; // 96px
+    const iconSize = "h-10 w-10";
 
     const statusConfig = {
         completed: {
-            icon: <CheckCircle className="h-6 w-6 text-white"/>,
-            classes: 'bg-green-500 hover:bg-green-600',
-            tooltip: `Пройден: ${title}${grade ? ' (Оценка: ' + grade + ')' : ''}`,
+            icon: <CheckCircle className={`${iconSize} text-white`} />,
+            classes: 'bg-green-500 shadow-[0_8px_20px_rgba(34,197,94,0.4)]',
         },
         active: {
-            icon: <Zap className="h-6 w-6 text-white"/>,
-            classes: 'bg-blue-600 ring-4 ring-blue-300 hover:bg-blue-700',
-            tooltip: `Активный урок: ${title}`,
+            icon: <Zap className={`${iconSize} text-white`} />,
+            classes: 'bg-blue-600 ring-[6px] ring-blue-200 shadow-[0_8px_25px_rgba(37,99,235,0.5)]',
         },
         locked: {
-            icon: <Lock className="h-6 w-6 text-gray-400"/>,
-            classes: 'bg-gray-200 cursor-not-allowed',
-            tooltip: `Закрыт: ${title}`,
+            icon: <Lock className={`${iconSize} text-gray-400`} />,
+            classes: 'bg-gray-100 border-4 border-gray-200 shadow-none',
         },
     }[status];
 
@@ -35,24 +36,31 @@ export const LessonNode = ({ lesson, courseId }: LessonNodeProps) => {
 
     const nodeContent = (
         <div
-            className={`relative h-16 w-16 rounded-full flex items-center justify-center shadow-lg transition duration-300 ${statusConfig.classes} ${isPerfect ? 'border-4 border-yellow-400' : ''}`}            title={statusConfig.tooltip}
+            // shrink-0 запрещает сплющивание
+            className={`
+                ${sizeClasses} shrink-0 rounded-full flex items-center justify-center 
+                transition-transform duration-300 transform 
+                ${statusConfig.classes} 
+                ${isPerfect ? 'border-4 border-yellow-400' : ''}
+            `}
         >
             {statusConfig.icon}
-            {isPerfect && <Star className="absolute -top-1 -right-1 h-4 w-4 text-yellow-500 fill-yellow-500"/>}
+            {isPerfect && (
+                <Star className="absolute top-0 right-0 h-8 w-8 text-yellow-500 fill-yellow-500 transform translate-x-1 -translate-y-1 drop-shadow-md" />
+            )}
         </div>
     );
-    return status === 'locked' ? (
-        // Если закрыт, возвращаем просто div без ссылки
-        <div className="flex flex-col items-center">
+
+    if (status === 'locked') {
+        return <div className="flex items-center justify-center">{nodeContent}</div>;
+    }
+
+    return (
+        <Link
+            href={link}
+            className="flex items-center justify-center hover:scale-110 hover:-translate-y-1 transition-all duration-300"
+        >
             {nodeContent}
-            <span className="mt-1 text-xs text-gray-500 truncate max-w-[60px]">{title}</span>
-        </div>
-    ) : (
-        // Если активен или пройден, оборачиваем в Link
-        <Link href={link} className="flex flex-col items-center hover:scale-105 transition">
-            {nodeContent}
-            <span className="mt-1 text-xs text-gray-700 font-medium truncate max-w-[60px]">{title}</span>
         </Link>
     );
-}
-
+};
