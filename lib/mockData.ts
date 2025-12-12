@@ -26,7 +26,7 @@ export interface Course {
 const courseLessons: Lesson[] = [
     { id: 101, title: 'Введение в Python', videoUrl: 'video_101.mp4', status: 'completed', grade: 5 },
     { id: 102, title: 'Переменные и типы', videoUrl: 'video_102.mp4', status: 'active' }, // Активный урок (надо пройти)
-    { id: 103, title: 'Условные операторы', videoUrl: 'video_103.mp4', status: 'locked', deadline: '2025-12-20' }, // Закрыт
+    { id: 103, title: 'Условные операторы', videoUrl: 'video_103.mp4', status: 'active', deadline: '2025-12-20' }, // Закрыт
     { id: 104, title: 'Циклы', videoUrl: 'video_104.mp4', status: 'locked' },
     { id: 105, title: 'Функции', videoUrl: 'video_105.mp4', status: 'locked' },
     { id: 106, title: 'OOP', videoUrl: 'video_105.mp4', status: 'locked' },

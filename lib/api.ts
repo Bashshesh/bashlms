@@ -30,6 +30,30 @@ export async function fetchLessonById(courseId: number, lessonId: number): Promi
     return course?.lessons.find(lesson => lesson.id === lessonId);
 }
 
+export async function fetchLessonData(courseId: number, lessonId: number) {
+    await simulateDelay(400);
+    // 1. Ищем курс
+    const course = mockCourses.find(c => c.id === courseId);
+    if (!course) return null;
+
+    // 2. Ищем индекс урока внутри массива
+    const lessonIndex = course.lessons.findIndex(l => l.id === lessonId);
+    if (lessonIndex === -1) return null;
+
+    // 3. Достаем сам урок и соседей для навигации
+    const lesson = course.lessons[lessonIndex];
+    const prevLesson = lessonIndex > 0 ? course.lessons[lessonIndex - 1] : null;
+    const nextLesson = lessonIndex < course.lessons.length - 1 ? course.lessons[lessonIndex + 1] : null;
+
+    // 4. Возвращаем всё пачкой
+    return {
+        course,
+        lesson,
+        prevLesson,
+        nextLesson
+    };
+}
+
 // --- API для НОВОСТЕЙ ---
 
 export async function fetchNews() {
