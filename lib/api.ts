@@ -1,4 +1,5 @@
-import { Course, mockCourses, mockNews, Lesson } from './mockData';
+import type { Course, Lesson } from './types';
+import { mockCourses, mockNews } from './mockData';
 
 // Функция-хелпер для имитации задержки сети
 const simulateDelay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));

@@ -1,4 +1,4 @@
-import { Lesson } from '@/lib/mockData';
+import { Lesson } from '@/lib/types';
 import { LessonNode } from './LessonNode';
 import { cn } from '@/lib/utils';
 

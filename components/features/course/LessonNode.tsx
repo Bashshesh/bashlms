@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Lock, Zap, CheckCircle, Star } from 'lucide-react';
-import { Lesson } from '@/lib/mockData';
+import { Lesson } from '@/lib/types';
 
 interface LessonNodeProps {
     lesson: Lesson;
