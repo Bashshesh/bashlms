@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Course } from '@/lib/mockData'; // Импортируем тип!
+import { Course } from '@/lib/types'; // Импортируем тип!
 import { Button } from '@/components/ui/Button';
 
 interface CourseCardProps {

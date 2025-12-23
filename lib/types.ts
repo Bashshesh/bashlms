@@ -1,36 +1,33 @@
 export type LessonStatus = 'locked' | 'active' | 'completed';
+export type HomeworkAccept = 'image' | 'file';
 
-export type LessonBase = {
+export type Lesson = {
     id: number;
     title: string;
     status: LessonStatus;
+
+    // Основной контент (опционально любой из них)
+    videoUrl?: string;
+    pdfUrl?: string;
+    questionCount?: number;
+    timerSec?: number;
+
+    // Дополнительные элементы
+    extraText?: string;
+    explanationVideos?: Array<{ from: number; to: number; videoUrl: string }>;
+    answerKey?: Record<number, 'A' | 'B' | 'C' | 'D'>;
+
+    // Домашка
+    homework?: {
+        accept: HomeworkAccept;
+        maxFiles: number;
+    };
+
+    // Общие поля
     grade?: number;
     deadline?: string;
     duration?: string;
 };
-
-export type VideoLesson = LessonBase & {
-    kind: 'video';
-    videoUrl: string;
-};
-
-export type QuizPdfLesson = LessonBase & {
-    kind: 'quiz_pdf';
-    pdfUrl: string;
-    questionCount: number; // 40
-    timerSec: number;
-    explanationVideos: Array<{ from: number; to: number; videoUrl: string }>;
-    answerKey?: Record<number, 'A' | 'B' | 'C' | 'D'>; // временно для фронта
-};
-
-export type VideoHomeworkLesson = LessonBase & {
-    kind: 'video_homework';
-    videoUrl: string;
-    extraText?: string;
-    homework: { accept: 'image'; maxFiles: number };
-};
-
-export type Lesson = VideoLesson | QuizPdfLesson | VideoHomeworkLesson;
 
 export type Course = {
     id: number;
@@ -41,5 +38,4 @@ export type Course = {
     isEnrolled: boolean;
     image?: string;
     lessons: Lesson[];
-    category: 'Programming' | 'Design' | 'Marketing' | 'Science';
 };
