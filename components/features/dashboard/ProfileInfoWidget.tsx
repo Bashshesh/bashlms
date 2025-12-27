@@ -1,9 +1,17 @@
-"use client";
-import React, { useState } from "react";
-import {Button} from "@/components/ui/Button";
+'use client';
+import React, { useState, useEffect } from "react";
+import { Button } from "@/components/ui/Button";
+import { fetchMe } from '@/lib/api';
 
 export const ProfileInfoWidget = () => {
-    const [isEditing, setIsEditing] = useState(false)
+    const [isEditing, setIsEditing] = useState(false);
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+        fetchMe().then(setUser).catch(console.error);
+    }, []);
+
+    if (!user) return <div className="h-64 bg-white animate-pulse rounded-xl" />;
 
     return (
         <div className="bg-white p-6 rounded-xl shadow-sm h-full">
@@ -21,7 +29,7 @@ export const ProfileInfoWidget = () => {
                 {/* Аватар */}
                 <div className="flex items-center gap-4">
                     <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center text-2xl font-bold text-blue-600">
-                        YE
+                        {user.email?.[0]?.toUpperCase() || "U"}
                     </div>
                     {isEditing && (
                         <button className="text-sm text-blue-600 hover:underline">
@@ -33,10 +41,10 @@ export const ProfileInfoWidget = () => {
                 {/* Поля ввода */}
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm text-gray-500 mb-1">Имя</label>
+                        <label className="block text-sm text-gray-500 mb-1">Имя пользователя</label>
                         <input
                             disabled={!isEditing}
-                            defaultValue="Yerasyl"
+                            defaultValue={user.username}
                             className={`w-full p-2 rounded-lg border ${isEditing ? 'border-blue-500 bg-white' : 'border-transparent bg-gray-50'}`}
                         />
                     </div>
@@ -45,14 +53,16 @@ export const ProfileInfoWidget = () => {
                         <label className="block text-sm text-gray-500 mb-1">Email</label>
                         <input
                             disabled={!isEditing}
-                            defaultValue="yerasyl@example.com"
+                            defaultValue={user.email}
                             className={`w-full p-2 rounded-lg border ${isEditing ? 'border-blue-500 bg-white' : 'border-transparent bg-gray-50'}`}
                         />
                     </div>
 
                     <div>
                         <label className="block text-sm text-gray-500 mb-1">Роль</label>
-                        <div className="p-2 text-gray-800 font-medium">Студент</div>
+                        <div className="p-2 text-gray-800 font-medium">
+                            {user.is_staff ? "Администратор" : "Студент"}
+                        </div>
                     </div>
                 </div>
             </div>

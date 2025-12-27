@@ -1,68 +1,133 @@
+import api from '@/lib/axios';
 import type { Course, Lesson } from './types';
-import { mockCourses, mockNews } from './mockData';
 
-// Функция-хелпер для имитации задержки сети
-const simulateDelay = (ms = 500) => new Promise(resolve => setTimeout(resolve, ms));
+// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (Mappers) ---
+// Django отдает snake_case (video_url), а фронт ждет camelCase (videoUrl)
+// Здесь мы их "женим"
 
-// --- API для КУРСОВ ---
+const adaptCourse = (data: any): Course => ({
+    id: data.id,
+    title: data.title,
+    description: data.description,
+    price: 0, // В твоей БД нет цены, ставим заглушку или добавь поле в модель
+    startDate: data.created_at || new Date().toISOString(), // created_at -> startDate
+    isEnrolled: data.is_enrolled,
+    image: data.cover, // cover -> image
+    lessons: data.lessons ? data.lessons.map(adaptLesson) : [],
+});
 
-// Получить список всех курсов
+const adaptLesson = (data: any): Lesson => ({
+    id: data.id,
+    title: data.title,
+    status: data.status, // Твой сериалайзер уже возвращает 'locked'/'active'/'completed'
+
+    // Опциональные поля
+    videoUrl: data.video_url || undefined, // video_url -> videoUrl
+
+    // Поля, которых нет в БД (пока заглушки, чтобы TS не ругался)
+    questionCount: 0,
+    timerSec: 0,
+
+    grade: data.grade,
+});
+
+// --- API ФУНКЦИИ ---
+
+export async function completeLesson(courseId: number, lessonId: number) {
+    // Вызываем action "complete" из LessonViewSet
+    // URL будет примерно такой: /courses/1/lessons/5/complete/
+    const response = await api.post(`/courses/${courseId}/lessons/${lessonId}/complete/`);
+    return response.data;
+}
+
 export async function fetchAllCourses(): Promise<Course[]> {
-    return mockCourses;
+    const response = await api.get('/courses/');
+    return response.data.map(adaptCourse);
 }
 
-// Получить список курсов, на которые записан ученик
 export async function fetchMyCourses(): Promise<Course[]> {
-    return mockCourses.filter(course => course.isEnrolled);
+    // Используем твой action "my_courses" из CourseViewSet
+    const response = await api.get('/courses/my_courses/');
+    return response.data.map(adaptCourse);
 }
 
-// Получить данные конкретного курса по ID
 export async function fetchCourseById(id: number): Promise<Course | undefined> {
-    return mockCourses.find(course => course.id === id);
+    try {
+        const response = await api.get(`/courses/${id}/`);
+        return adaptCourse(response.data);
+    } catch (error) {
+        return undefined;
+    }
 }
 
-// Получить данные конкретного урока по ID
-export async function fetchLessonById(courseId: number, lessonId: number): Promise<Lesson | undefined> {
-    const course = mockCourses.find(c => c.id === courseId);
-    return course?.lessons.find(lesson => lesson.id === lessonId);
-}
-
+// Получить данные урока (Context)
 export async function fetchLessonData(courseId: number, lessonId: number) {
-    // 1. Ищем курс
-    const course = mockCourses.find(c => c.id === courseId);
-    if (!course) return null;
+    try {
+        // Вызываем твой кастомный action "context"
+        const response = await api.get(`/courses/${courseId}/lessons/${lessonId}/context/`);
 
-    // 2. Ищем индекс урока внутри массива
-    const lessonIndex = course.lessons.findIndex(l => l.id === lessonId);
-    if (lessonIndex === -1) return null;
-
-    // 3. Достаем сам урок и соседей для навигации
-    const lesson = course.lessons[lessonIndex];
-    const prevLesson = lessonIndex > 0 ? course.lessons[lessonIndex - 1] : null;
-    const nextLesson = lessonIndex < course.lessons.length - 1 ? course.lessons[lessonIndex + 1] : null;
-
-    // 4. Возвращаем всё пачкой
-    return {
-        course,
-        lesson,
-        prevLesson,
-        nextLesson
-    };
+        return {
+            course: adaptCourse(response.data.course),
+            lesson: adaptLesson(response.data.lesson),
+            prevLesson: response.data.prevLesson ? adaptLesson(response.data.prevLesson) : null,
+            nextLesson: response.data.nextLesson ? adaptLesson(response.data.nextLesson) : null
+        };
+    } catch (error) {
+        console.error("Ошибка загрузки урока:", error);
+        return null;
+    }
 }
 
 // --- API для НОВОСТЕЙ ---
 
 export async function fetchNews() {
-    await simulateDelay(300);
-    return mockNews;
+    const response = await api.get('/news/');
+    return response.data;
 }
 
-// --- API для АВТОРИЗАЦИИ (заглушки) ---
+// --- API для АВТОРИЗАЦИИ ---
 
-export async function login(data: any): Promise<{ token: string }> {
-    await simulateDelay(1000);
-    if (data.email === "test@bashlms.kz" && data.password === "123456") {
-        return { token: "fake_jwt_token_12345" };
+export async function login(data: any): Promise<{ token: string, refresh: string }> {
+    // ВАЖНО: У тебя в urls.py путь api/v1/auth/token/
+    const response = await api.post('/auth/token/', {
+        email: data.email,
+        password: data.password
+    });
+
+    if (response.data.access) {
+        localStorage.setItem('access_token', response.data.access);
+        localStorage.setItem('refresh_token', response.data.refresh);
+        return { token: response.data.access, refresh: response.data.refresh };
     }
-    throw new Error("Неверные учетные данные");
+    throw new Error("Ошибка входа");
+}
+
+export async function register(data: any) {
+    // Путь из users/urls.py -> path('auth/register/', ...)
+    const response = await api.post('/auth/register/', {
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        password2: data.confirmPassword // Бэк ждет password2
+    });
+    return response.data;
+}
+
+export async function fetchMe() {
+    // Получить данные текущего юзера
+    const response = await api.get('/auth/me/');
+    return response.data;
+}
+
+// Функция выхода
+export function logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    window.location.href = '/login';
+}
+
+//Запись на курс
+export async function enrollInCourse(courseId: number): Promise<void> {
+    // Вызываем action "enroll", который ты прописал в views.py
+    await api.post(`/courses/${courseId}/enroll/`);
 }

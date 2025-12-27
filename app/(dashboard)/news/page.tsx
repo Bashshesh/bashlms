@@ -1,7 +1,7 @@
-import {fetchNews} from "@/lib/api";
+import { fetchNews } from "@/lib/api";
 import { Alert } from '@/components/ui/Alert';
+import { Calendar } from "lucide-react"; // Иконка даты
 
-// Указываем тип для элемента новости, взятый из lib/mockData
 interface NewsItem {
     id: number;
     title: string;
@@ -10,36 +10,52 @@ interface NewsItem {
 }
 
 export default async function NewsPage() {
-    // 1. Инициализируем news пустым массивом, чтобы гарантировать тип и значение
     let news: NewsItem[] = [];
     let error: string | null = null;
 
     try {
-        // 2. news теперь гарантированно является массивом типа NewsItem[]
         news = await fetchNews();
     } catch (e) {
-        error = 'Не удалось загрузить новости с сервера.';
+        error = 'Не удалось загрузить новости.';
         console.error(e);
-        // news остается пустым массивом, что корректно для рендеринга
     }
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-lg">
-            <h2 className="text-3xl font-bold mb-8 text-gray-800">📰 Новости и Объявления</h2>
+        <div className="max-w-4xl mx-auto p-6">
+            <div className="flex items-center justify-between mb-8">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Новости и обновления</h1>
+                    <p className="text-gray-500 mt-1">Последние события платформы BashLMS</p>
+                </div>
+            </div>
+
             {error && <Alert type="error" message={error} className="mb-6" />}
 
-            {/* Проверка на пустой массив (сработает, если API вернул 0 или была ошибка) */}
             {news.length === 0 && !error && (
-                <div className="text-gray-500">Пока нет новостей.</div>
+                <div className="text-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
+                    <h3 className="text-lg font-medium text-gray-900">Пока новостей нет</h3>
+                    <p className="text-gray-500">Следите за обновлениями.</p>
+                </div>
             )}
 
-            <div className="space-y-6">
+            <div className="grid gap-6">
                 {news.map((item) => (
-                    <div key={item.id} className="bg-white p-6 rounded-xl shadow-md border border-gray-100 transition hover:shadow-lg hover:border-blue-300 transform hover:scale-[1.01]">
-                        <h3 className="text-xl font-semibold text-blue-700 mb-2">{item.title}</h3>
-                        <p className="text-gray-600 mb-3">{item.content}</p>
-                        <p className="text-sm text-gray-400">Дата: {item.date}</p>
-                    </div>
+                    <article key={item.id} className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-2 text-sm text-gray-400 mb-3">
+                            <Calendar size={14} />
+                            <time>{new Date(item.date).toLocaleDateString('ru-RU', {
+                                day: 'numeric', month: 'long', year: 'numeric'
+                            })}</time>
+                        </div>
+
+                        <h2 className="text-xl font-bold text-gray-800 mb-3 leading-tight hover:text-blue-600 transition-colors cursor-pointer">
+                            {item.title}
+                        </h2>
+
+                        <p className="text-gray-600 leading-relaxed whitespace-pre-line">
+                            {item.content}
+                        </p>
+                    </article>
                 ))}
             </div>
         </div>

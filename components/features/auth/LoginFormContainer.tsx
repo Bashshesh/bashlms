@@ -1,70 +1,82 @@
 'use client';
 
-import React, { useState } from 'react';
-import { LoginFormUI } from './LoginFormUI';
-import { useRouter } from 'next/navigation'; // Для перенаправления после логина
-// import { loginUser } from '@/lib/api'; // <-- В будущем тут будет реальный API клиент
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { login } from '@/lib/api'; // Импорт из твоего api.ts
 
 export const LoginFormContainer = () => {
-    const router = useRouter(); // Используем useRouter для программной навигации
-    const [formState, setFormState] = useState({
-        email: '',
-        password: '',
-    });
-    const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormState(prev => ({
-            ...prev,
-            [e.target.name]: e.target.value,
-        }));
+    // Стейты для полей
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
+    });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
+        setLoading(true);
         setError(null);
 
-        // 1. **ВАЛИДАЦИЯ (Frontend):**
-        if (!formState.email || !formState.password) {
-            setError("Пожалуйста, введите email и пароль.");
-            setIsLoading(false);
-            return;
-        }
-
         try {
-            // 2. **ВЫЗОВ API (Backend):**
-            // const response = await loginUser(formState); // <-- В будущем тут будет реальный вызов
-            console.log('Отправка данных на Django для логина:', formState);
-
-            // 3. **УСПЕХ:**
-            // if (response.token) { // Предполагаем, что Django возвращает токен
-            //   localStorage.setItem('authToken', response.token); // Сохраняем токен
-            //   router.push('/news'); // Перенаправляем на главную после логина
-            // }
-            alert('Успешный вход! (Перенаправления пока нет)');
-            router.push('/news'); // Временно перенаправляем на новости после алерта
-
-        } catch (apiError) {
-            // 4. **ОШИБКА:**
-            console.error('Ошибка входа:', apiError);
-            // setError(apiError.response.data.message || "Неверный логин или пароль.");
-            setError("Неверный email или пароль.");
+            await login(formData);
+            // Если успех — редирект на курсы
+            router.push('/courses');
+        } catch (err: any) {
+            console.error(err);
+            setError('Неверный email или пароль. Попробуйте снова.');
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
     return (
-        <LoginFormUI
-            isLoading={isLoading}
-            error={error}
-            onSubmit={handleLogin}
-            onInputChange={handleInputChange}
-        />
+        <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+                <div className="p-3 text-sm text-red-600 bg-red-100 rounded-md">
+                    {error}
+                </div>
+            )}
+
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Email</label>
+                <input
+                    type="email"
+                    name="email"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="user@example.com"
+                />
+            </div>
+
+            <div>
+                <label className="block text-sm font-medium text-gray-700">Пароль</label>
+                <input
+                    type="password"
+                    name="password"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    placeholder="••••••••"
+                />
+            </div>
+
+            <button
+                type="submit"
+                disabled={loading}
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+            >
+                {loading ? 'Вход...' : 'Войти'}
+            </button>
+        </form>
     );
 };
-
-export class LoginFormConatiner {
-}

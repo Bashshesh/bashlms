@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, Home, Trophy, User, ChevronLeft, ChevronRight, MoreVertical } from "lucide-react";
-import { createContext, useContext, useState, ReactNode } from "react"
-import {usePathname} from "next/navigation";
+import {BookOpen, Home, Trophy, User, ChevronLeft, ChevronRight, MoreVertical, LogOut} from "lucide-react";
+import { createContext, useContext, useState, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { fetchMe, logout } from "@/lib/api"; // Импортируй свои функции
+
 
 interface SidebarContextType {
     expanded: boolean;
@@ -11,11 +13,21 @@ interface SidebarContextType {
 const SidebarContext = createContext<SidebarContextType>({ expanded: false });
 
 export const Sidebar = () => {
+    const [expanded, setExpanded] = useState(false);
+    const [user, setUser] = useState<any>(null);
+    const router = useRouter();
 
-    const [expanded, setExpanded] = useState(false)
+    useEffect(() => {
+        fetchMe().then(setUser).catch(() => setUser(null));
+    }, []);
+
+    const handleLogout = () => {
+        logout(); // Удаляем токен
+        router.push('/login');
+    };
 
     return (
-        <aside className="h-screen sticky top-0">
+        <aside className="h-screen sticky top-0 z-50">
             <nav className="h-full flex flex-col bg-white border-r shadow-sm transition-all duration-300">
 
                 {/* --- ШАПКА: Лого + Кнопка сворачивания --- */}
@@ -41,25 +53,36 @@ export const Sidebar = () => {
                         <SidebarItem icon={Home} label="Главная" href="/" />
                         <SidebarItem icon={Trophy} label="Новости" href="/news" />
                         <SidebarItem icon={BookOpen} label="Курсы" href="/courses" />
-                        <SidebarItem icon={BookOpen} label="Мои курсы" href="/my-courses" />
+                        {user && <SidebarItem icon={BookOpen} label="Мои курсы" href="/my-courses" />}
                         <SidebarItem icon={Trophy} label="Достижения" href="/achievements" />
                         <SidebarItem icon={User} label="Профиль" href="/profile" />
                     </ul>
                 </SidebarContext.Provider>
 
                 {/* --- НИЖНЯЯ ЧАСТЬ: Профиль (Опционально) --- */}
-                <div className="border-t flex p-3 items-center">
-                    {/* Заглушка аватарки */}
-                    <div className="w-10 h-10 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg min-w-[40px]">
-                        U
+                <div className="border-t flex p-3 items-center relative group">
+                    <div className="w-10 h-10 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg min-w-[40px] uppercase">
+                        {user?.email?.[0] || "?"}
                     </div>
 
                     <div className={`flex justify-between items-center overflow-hidden transition-all duration-300 ${expanded ? "w-40 ml-3" : "w-0"}`}>
-                        <div className="leading-4 whitespace-nowrap">
-                            <h4 className="font-semibold text-sm">Ученик</h4>
-                            <span className="text-xs text-gray-600">student@bashlms.kz</span>
+                        <div className="leading-4 whitespace-nowrap overflow-hidden">
+                            <h4 className="font-semibold text-sm truncate">{user?.username || "Гость"}</h4>
+                            <span className="text-xs text-gray-600 truncate block w-32" title={user?.email}>
+                                {user?.email || "Войдите в аккаунт"}
+                            </span>
                         </div>
-                        <MoreVertical size={20} className="text-gray-500 cursor-pointer" />
+
+                        {/* Кнопка выхода (Logout) */}
+                        {user ? (
+                            <button onClick={handleLogout} title="Выйти" className="hover:text-red-500 transition">
+                                <LogOut size={20} className="text-gray-500" />
+                            </button>
+                        ) : (
+                            <Link href="/login">
+                                <MoreVertical size={20} className="text-gray-500 cursor-pointer" />
+                            </Link>
+                        )}
                     </div>
                 </div>
             </nav>
